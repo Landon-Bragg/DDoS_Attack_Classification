@@ -1,0 +1,19 @@
+# How to enter the venv: cd C:\Users\cybears\Downloads\DDoS
+# venv\Scripts\activate
+
+# How to check TensorBoard tensorboard --logdir=runs/ddos_l40_v1
+
+# For normal python train.py
+# For corruption testing python train_temporal.py
+
+
+torch>=1.13.0
+torchvision>=0.14.0
+numpy>=1.21.0
+tqdm>=4.64.0
+Pillow>=9.0.0
+torchattacks>=1.3.0
+advertorch>=0.2.1
+tensorboard>=2.10.0
+pandas>=2.2.3
+scikit-learn>=1.6.1
