@@ -1,9 +1,0 @@
-Regime,Condition,Accuracy
-clean,clean,0.99
-clean,aug,0.5075
-clean,pgd,0.6725
-clean,fgsm,0.5375
-adversarial,clean,0.985
-adversarial,aug,0.9575
-adversarial,pgd,1.0
-adversarial,fgsm,0.93
