@@ -33,16 +33,16 @@ def augment_batch(seqs):
             angle = random.uniform(-23, 23)
             frame = F.rotate(frame, angle)
             # shear
-            shear = random.uniform(-11, 11)
+            shear = random.uniform(-10, 10)
             frame = F.affine(frame, angle=0, translate=[0,0], scale=1.0, shear=shear)
             # zoom via random crop + resize
-            crop_factor = random.uniform(0.70, 1.0)
+            crop_factor = random.uniform(0.72, 1.0)
             new_h, new_w = int(H * crop_factor), int(W * crop_factor)
             top  = random.randint(0, H - new_h)
             left = random.randint(0, W - new_w)
             frame = F.resized_crop(frame, top, left, new_h, new_w, [H, W])
             # noise
-            noise = torch.randn_like(frame) * 0.195
+            noise = torch.randn_like(frame) * 0.18
             frame = torch.clamp(frame + noise, 0, 1)
             frames.append(frame)
         out.append(torch.stack(frames, dim=1))  # [C, D, H, W]
@@ -60,9 +60,9 @@ def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, sc
         if regime == 'adversarial':
             b = seqs.size(0)
             # compute slice sizes
-            n_clean = max(1, int(b * 0.075))
-            n_aug   = max(1, int(b * 0.075))
-            n_pgd   = max(1, int(b * 0.58))
+            n_clean = max(1, int(b * 0.1))
+            n_aug   = max(1, int(b * 0.12))
+            n_pgd   = max(1, int(b * 0.28))
             # remaining for FGSM
             n_fgsm  = b - (n_clean + n_aug + n_pgd)
 
@@ -228,7 +228,7 @@ def main():
             # adversarial: early-stop when LR has been cut N times
             prev_lr = cfg['lr']
             lr_cuts = 0
-            max_cuts = 3
+            max_cuts = 4
             for epoch in range(cfg['epochs']):
                 print(f"[{regime}] Epoch {epoch+1}/{cfg['epochs']}")
                 train_loss = train_one_epoch(model, train_loader,
