@@ -1,4 +1,5 @@
-DDoS_Robustness_Project/
+```
+DDoS_Attack_Classification/
 ├── README.md
 ├── requirements.txt
 ├── config.py
@@ -13,7 +14,7 @@ DDoS_Robustness_Project/
 ├── utils.py
 ├── adversarial_train.py
 └── evaluate.py
-
+```
 # Adversarially Robust DDoS Classification
 
 This project implements and evaluates adversarially robust deep‑learning models to classify Distributed Denial-of-Service (DDoS) attacks using hive‑plot images of network traffic.
