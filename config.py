@@ -12,7 +12,7 @@ CONFIG = {
     "persistent_workers": True,
 
     # Adversarial parameters
-    "fgsm_eps": 1.2,
+    "fgsm_eps": 1.19,
     "pgd_eps": 1.225,
     "pgd_alpha": 1.1, # look into this
     # The higher you make this value, the slower everything takes to run 

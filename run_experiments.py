@@ -30,19 +30,19 @@ def augment_batch(seqs):
         for i in range(D):
             frame = seqs[b, :, i]  # [C, H, W]
             # rotation
-            angle = random.uniform(-23, 23)
+            angle = random.uniform(-18, 18)
             frame = F.rotate(frame, angle)
             # shear
-            shear = random.uniform(-10, 10)
+            shear = random.uniform(-11, 11)
             frame = F.affine(frame, angle=0, translate=[0,0], scale=1.0, shear=shear)
             # zoom via random crop + resize
-            crop_factor = random.uniform(0.72, 1.0)
+            crop_factor = random.uniform(0.75, 1.0)
             new_h, new_w = int(H * crop_factor), int(W * crop_factor)
             top  = random.randint(0, H - new_h)
             left = random.randint(0, W - new_w)
             frame = F.resized_crop(frame, top, left, new_h, new_w, [H, W])
             # noise
-            noise = torch.randn_like(frame) * 0.18
+            noise = torch.randn_like(frame) * 0.17
             frame = torch.clamp(frame + noise, 0, 1)
             frames.append(frame)
         out.append(torch.stack(frames, dim=1))  # [C, D, H, W]
@@ -60,9 +60,9 @@ def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, sc
         if regime == 'adversarial':
             b = seqs.size(0)
             # compute slice sizes
-            n_clean = max(1, int(b * 0.1))
+            n_clean = max(1, int(b * 0.08))
             n_aug   = max(1, int(b * 0.12))
-            n_pgd   = max(1, int(b * 0.28))
+            n_pgd   = max(1, int(b * 0.23))
             # remaining for FGSM
             n_fgsm  = b - (n_clean + n_aug + n_pgd)
 
