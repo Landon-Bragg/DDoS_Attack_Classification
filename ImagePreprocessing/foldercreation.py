@@ -3,7 +3,6 @@ import shutil
 import re
 
 def reorganize_dataset(dataset_root):
-    """Handles actual observed file structure with missing sequences"""
     for root, dirs, files in os.walk(dataset_root):
         if 'DDoS' in root or 'Normal' in root:
             print(f"\nProcessing {root}...")
@@ -35,7 +34,7 @@ def reorganize_dataset(dataset_root):
                     print(f"Created {seq_dir} with {len(frames)} frames")
 
 if __name__ == "__main__":
-    dataset_root = "dataset_root"  # Confirm this is your correct path
+    dataset_root = "dataset_root" 
     reorganize_dataset(dataset_root)
     print("\nReorganization complete! Verifying...")
     

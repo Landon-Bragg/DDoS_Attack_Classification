@@ -22,7 +22,7 @@ def resize_dataset(dataset_root, target_size=(400, 400)):
                 for png_file in png_files:
                     png_path = os.path.join(seq_path, png_file)
                     with Image.open(png_path) as img:
-                        # Choose a resample filter, e.g. LANCZOS, BILINEAR, BICUBIC
+                        # Resample filter
                         resized_img = img.resize(target_size, Image.LANCZOS)
                         resized_img.save(png_path)  # Overwrite in place
 

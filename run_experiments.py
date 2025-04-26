@@ -15,7 +15,6 @@ import random
 from torch.amp import autocast, GradScaler
 
 import torch.backends.cudnn as cudnn
-# cuDNN autotuner (idrk what this does, supposed to make it go faster)
 cudnn.benchmark = True
 
 def augment_batch(seqs):
@@ -29,19 +28,19 @@ def augment_batch(seqs):
         frames = []
         for i in range(D):
             frame = seqs[b, :, i]  # [C, H, W]
-            # rotation
+            # Rotation
             angle = random.uniform(-18, 18)
             frame = F.rotate(frame, angle)
-            # shear
+            # Shear
             shear = random.uniform(-11, 11)
             frame = F.affine(frame, angle=0, translate=[0,0], scale=1.0, shear=shear)
-            # zoom via random crop + resize
+            # Zoom via random crop + resize
             crop_factor = random.uniform(0.75, 1.0)
             new_h, new_w = int(H * crop_factor), int(W * crop_factor)
             top  = random.randint(0, H - new_h)
             left = random.randint(0, W - new_w)
             frame = F.resized_crop(frame, top, left, new_h, new_w, [H, W])
-            # noise
+            # Noise
             noise = torch.randn_like(frame) * 0.17
             frame = torch.clamp(frame + noise, 0, 1)
             frames.append(frame)
@@ -59,14 +58,14 @@ def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, sc
 
         if regime == 'adversarial':
             b = seqs.size(0)
-            # compute slice sizes
+            # Slicing distribution of training data types
             n_clean = max(1, int(b * 0.08))
             n_aug   = max(1, int(b * 0.12))
             n_pgd   = max(1, int(b * 0.23))
-            # remaining for FGSM
+            # Remaining for FGSM
             n_fgsm  = b - (n_clean + n_aug + n_pgd)
 
-            # slice off each chunk
+            # Slice off each chunk
             c_seqs  = seqs[:n_clean];      c_lbl = labels[:n_clean]
             a_seqs  = seqs[n_clean:n_clean+n_aug]
             a_lbl   = labels[n_clean:n_clean+n_aug]
@@ -74,19 +73,19 @@ def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, sc
             p_lbl   = labels[n_clean+n_aug : n_clean+n_aug+n_pgd]
             f_seqs  = seqs[-n_fgsm:];      f_lbl = labels[-n_fgsm:]
 
-            # apply attacks
+            # Apply attacks
             aug_seqs = augment_batch(a_seqs)
             pgd_seqs = get_pgd(model, cfg['pgd_eps'], cfg['pgd_alpha'], cfg['pgd_steps'])(p_seqs, p_lbl)
             fgs_seqs = get_fgsm(model, cfg['fgsm_eps'])(f_seqs, f_lbl)
 
-            # concatenate back
+            # Concatenate back
             seqs_batch = torch.cat([c_seqs, aug_seqs, pgd_seqs, fgs_seqs], dim=0)
             labels_batch = torch.cat([c_lbl, a_lbl, p_lbl, f_lbl], dim=0)
 
         else:
             seqs_batch, labels_batch = seqs, labels
 
-        # mixed‑precision forward/backward
+        # Mixed‑precision forward/backward pass
         with autocast(device_type=device.type):
             outputs = model(seqs_batch)
             loss    = criterion(outputs, labels_batch)
@@ -118,7 +117,7 @@ def evaluate(model, loader, device, cfg, mode):
     for seqs, labels in loader:
         seqs, labels = seqs.to(device), labels.to(device)
 
-        # 1) Generate the evaluation batch
+        # 1. Generate the evaluation batch
         if mode == 'clean':
             seqs_eval = seqs
 
@@ -136,7 +135,7 @@ def evaluate(model, loader, device, cfg, mode):
         else:
             raise ValueError(f"Unknown evaluation mode: {mode}")
 
-        # 2) Inference under no_grad
+        # 2. Inference under no_grad
         with torch.no_grad():
             outputs = model(seqs_eval)
             # Get class probabilities using softmax
@@ -145,7 +144,7 @@ def evaluate(model, loader, device, cfg, mode):
 
         # Store predictions, probabilities for positive class (for AUC), and labels
         all_preds.extend(preds.cpu().tolist())
-        all_probs.extend(probs[:, 1].cpu().tolist())  # Assuming class 1 is positive
+        all_probs.extend(probs[:, 1].cpu().tolist())
         all_labels.extend(labels.cpu().tolist())
 
     # Needs to clear cache to prevent gpu overuse, use outside loop to speed things up
@@ -179,7 +178,7 @@ def main():
     cfg    = config.CONFIG
     set_seed(cfg['seed'])
 
-    # prepare device, DataLoaders, etc.
+    # Prepare GPU/CPU, DataLoaders, etc.
     try:
         device = torch.device('cuda'); _ = torch.zeros(1, device=device)
     except:
@@ -217,7 +216,7 @@ def main():
         scaler    = GradScaler(device=device.type)
 
         if regime == 'clean':
-            # run *all* epochs
+            # run all epochs
             for epoch in range(cfg['epochs']):
                 print(f"[{regime}] Epoch {epoch+1}/{cfg['epochs']}")
                 _ = train_one_epoch(model, train_loader,
@@ -225,7 +224,7 @@ def main():
                                     device, regime, cfg, scaler)
 
         else:
-            # adversarial: early-stop when LR has been cut N times
+            # Adversarial early-stop when LR has been cut N times
             prev_lr = cfg['lr']
             lr_cuts = 0
             max_cuts = 4
@@ -241,16 +240,16 @@ def main():
                 if curr_lr < prev_lr:
                     lr_cuts += 1
                     prev_lr = curr_lr
-                    print(f"  ⚡️ LR cut #{lr_cuts}")
+                    print(f" LR cut #{lr_cuts}")
                 if lr_cuts >= max_cuts:
-                    print(f"⏹ Adversarial LR converged after {lr_cuts} cuts, stopping early.")
+                    print(f"Adversarial LR converged after {lr_cuts} cuts, stopping early.")
                     break
 
-        # save once per regime
+        # Save once per regime
         torch.save(model.state_dict(),
                    os.path.join(cfg['output_dir'], f"model_{regime}.pth"))
 
-        # single evaluation pass *after* training
+        # Single evaluation pass after training
         for mode in ['clean', 'aug', 'pgd', 'fgsm']:
             acc, precision, recall, auc = evaluate(model, val_loader, device, cfg, mode)
             results.append({
@@ -262,16 +261,15 @@ def main():
                 'AUC':       auc
             })
 
-    # finally, dump your DataFrame
+    # Store results to a csv
     df = pd.DataFrame(results)
     df.to_csv(os.path.join(cfg['output_dir'], 'results.csv'),
               index=False)
     
-    # Print formatted results
+    # Print formatted results to a table
     print("All experiments complete:")
     print(df.to_string(float_format="{:.4f}".format))
     
-    # Optionally create a more visual results table
     from matplotlib import pyplot as plt
     import seaborn as sns
             

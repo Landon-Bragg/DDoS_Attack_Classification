@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader, Dataset
 from models.cnn3d import DDoS3DCNN
 from data.sequence_dataset import SequenceDataset
 
-# Custom wrapper to select only one frame at a time
 def load_model(model_path, device):
     model = DDoS3DCNN(num_classes=2)
     model.load_state_dict(torch.load(model_path, map_location=device))
@@ -21,10 +20,10 @@ class SingleTimeStepDataset(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        seq, label = self.base_dataset[idx]  # seq: [C, D, H, W]
-        frame = seq[:, self.timestep, :, :]   # frame: [C, H, W]
-        frame = frame.unsqueeze(1)            # [C, 1, H, W]
-        frame = frame.repeat(1, 8, 1, 1)       # [C, 8, H, W] --> repeat along D dimension
+        seq, label = self.base_dataset[idx]  
+        frame = seq[:, self.timestep, :, :]   
+        frame = frame.unsqueeze(1)            
+        frame = frame.repeat(1, 8, 1, 1)       
         return frame, label
 
 

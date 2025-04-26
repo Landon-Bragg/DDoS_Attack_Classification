@@ -1,10 +1,5 @@
-"""
-Convert each seq_XX folder of 8 PNG frames into one .pt tensor
-[C, D, H, W] = [3, 8, 400, 400].  Run just once before training:
-
-python preprocess_sequences.py \
-      --dataset_root  "C:/path/to/png_dataset_root" \
-      --output_root   "C:/path/to/preprocessed_dataset"
+"""Convert each seq_XX folder of 8 PNG frames into one .pt tensor
+[C, D, H, W] = [3, 8, 400, 400].  Run just once before training:
 """
 import os, argparse, torch
 from PIL import Image
