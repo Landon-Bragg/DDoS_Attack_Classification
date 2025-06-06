@@ -1,6 +1,5 @@
 """Convert each seq_XX folder of 8 PNG frames into one .pt tensor
-[C, D, H, W] = [3, 8, 400, 400].  Run just once before training:
-"""
+[C, D, H, W] = [3, 8, 400, 400].  Run once before training"""
 import os, argparse, torch
 from PIL import Image
 from torchvision import transforms
