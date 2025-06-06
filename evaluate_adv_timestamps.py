@@ -23,10 +23,10 @@ class SingleTimeStepDataset(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        seq, label = self.base_dataset[idx]  # seq: [C, D, H, W]
-        frame = seq[:, self.timestep, :, :]   # [C, H, W]
-        frame = frame.unsqueeze(1)            # [C, 1, H, W]
-        frame = frame.repeat(1, 8, 1, 1)       # [C, 8, H, W]
+        seq, label = self.base_dataset[idx]
+        frame = seq[:, self.timestep, :, :]
+        frame = frame.unsqueeze(1)
+        frame = frame.repeat(1, 8, 1, 1)
         return frame, label
 
 def augment_batch(seqs):
@@ -48,7 +48,7 @@ def augment_batch(seqs):
             noise = torch.randn_like(frame) * 0.17
             frame = torch.clamp(frame + noise, 0, 1)
             frames.append(frame)
-        out.append(torch.stack(frames, dim=1))  # [C, D, H, W]
+        out.append(torch.stack(frames, dim=1))
     return torch.stack(out, dim=0) 
 
 def evaluate_model_adv(model_path, data_root, batch_size=16, num_workers=4):
