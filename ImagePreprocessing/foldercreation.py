@@ -8,7 +8,6 @@ def reorganize_dataset(dataset_root):
             print(f"\nProcessing {root}...")
             files = [f for f in files if f.endswith('.png')]
             
-            # Extract sequence numbers from actual filenames
             seq_map = {}
             for f in files:
                 # Match patterns like ddos-228-0.png or norm-1000-1.png
@@ -20,7 +19,6 @@ def reorganize_dataset(dataset_root):
                         seq_map[seq_num] = []
                     seq_map[seq_num].append((int(frame_num), f))
             
-            # Create sequence folders
             for seq_num in sorted(seq_map.keys()):
                 frames = sorted(seq_map[seq_num])
                 if len(frames) == 8:  # Only complete sequences
