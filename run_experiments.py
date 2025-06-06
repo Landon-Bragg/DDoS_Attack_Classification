@@ -7,6 +7,8 @@ from data.sequence_dataset import SequenceDataset
 from models.cnn3d import DDoS3DCNN
 from attacks.adversarial_attacks import get_fgsm, get_pgd
 from sklearn.metrics import precision_score, recall_score, roc_auc_score, confusion_matrix
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 from utils import set_seed
 import config
@@ -27,7 +29,7 @@ def augment_batch(seqs):
     for b in range(B):
         frames = []
         for i in range(D):
-            frame = seqs[b, :, i]  # [C, H, W]
+            frame = seqs[b, :, i]
             # Rotation
             angle = random.uniform(-18, 18)
             frame = F.rotate(frame, angle)
@@ -44,8 +46,8 @@ def augment_batch(seqs):
             noise = torch.randn_like(frame) * 0.17
             frame = torch.clamp(frame + noise, 0, 1)
             frames.append(frame)
-        out.append(torch.stack(frames, dim=1))  # [C, D, H, W]
-    return torch.stack(out, dim=0)  # [B, C, D, H, W]
+        out.append(torch.stack(frames, dim=1))
+    return torch.stack(out, dim=0)
 
 def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, scaler):
     print(f"--- Training regime: {regime} ---")
@@ -62,7 +64,6 @@ def train_one_epoch(model, loader, optimizer, criterion, device, regime, cfg, sc
             n_clean = max(1, int(b * 0.08))
             n_aug   = max(1, int(b * 0.12))
             n_pgd   = max(1, int(b * 0.23))
-            # Remaining for FGSM
             n_fgsm  = b - (n_clean + n_aug + n_pgd)
 
             # Slice off each chunk
@@ -138,11 +139,9 @@ def evaluate(model, loader, device, cfg, mode):
         # 2. Inference under no_grad
         with torch.no_grad():
             outputs = model(seqs_eval)
-            # Get class probabilities using softmax
             probs = torch.nn.functional.softmax(outputs, dim=1)
             preds = outputs.argmax(dim=1)
 
-        # Store predictions, probabilities for positive class (for AUC), and labels
         all_preds.extend(preds.cpu().tolist())
         all_probs.extend(probs[:, 1].cpu().tolist())
         all_labels.extend(labels.cpu().tolist())
@@ -155,14 +154,11 @@ def evaluate(model, loader, device, cfg, mode):
     precision = precision_score(all_labels, all_preds, zero_division=0)
     recall = recall_score(all_labels, all_preds, zero_division=0)
     
-    # Calculate AUC (need to handle cases where only one class is present)
     try:
         auc = roc_auc_score(all_labels, all_probs)
     except ValueError:
-        # This happens when only one class is present in the labels
         auc = float('nan')
     
-    # Print confusion matrix for additional insight
     cm = confusion_matrix(all_labels, all_preds)
     print(f"Confusion Matrix [{mode}]:\n{cm}")
     
@@ -216,7 +212,6 @@ def main():
         scaler    = GradScaler(device=device.type)
 
         if regime == 'clean':
-            # run all epochs
             for epoch in range(cfg['epochs']):
                 print(f"[{regime}] Epoch {epoch+1}/{cfg['epochs']}")
                 _ = train_one_epoch(model, train_loader,
@@ -224,7 +219,6 @@ def main():
                                     device, regime, cfg, scaler)
 
         else:
-            # Adversarial early-stop when LR has been cut N times
             prev_lr = cfg['lr']
             lr_cuts = 0
             max_cuts = 4
@@ -266,12 +260,10 @@ def main():
     df.to_csv(os.path.join(cfg['output_dir'], 'results.csv'),
               index=False)
     
-    # Print formatted results to a table
     print("All experiments complete:")
     print(df.to_string(float_format="{:.4f}".format))
     
-    from matplotlib import pyplot as plt
-    import seaborn as sns
+    
             
     # Create a heatmap to visualize the results
     plt.figure(figsize=(14, 8))
