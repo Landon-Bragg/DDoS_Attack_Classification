@@ -17,7 +17,7 @@ DDoS_Attack_Classification/
 ```
 DDoS Attack Classification with 3D CNN and Adversarial Robustness
 
-This project builds and evaluates a 3D Convolutional Neural Network (CNN) model to classify DDoS vs Normal network traffic based on preprocessed video-like sequences. The model is trained and evaluated under clean, augmented, and adversarial (FGSM and PGD) attack conditions to test its robustness.
+This project builds and evaluates a 3D Convolutional Neural Network (CNN) model to classify DDoS vs Normal network traffic based on preprocessed video-like sequences represented as 4D tensors. The model is trained and evaluated under clean, augmented, and adversarial (FGSM and PGD) attack conditions to test its robustness.
 
 Project Structure
 - `run_experiments.py`: Trains models under clean and adversarial regimes and evaluates on clean, augmented, FGSM, and PGD conditions.
@@ -50,14 +50,14 @@ How to Run
    pip install -r requirements.txt
 
 
-Train and evaluate:
-python run_experiments.py --config config.py
+2. Train and evaluate:
+    python run_experiments.py --config config.py
 
-Evaluate clean frame-by-frame
-python evaluate_timestamps.py
+3. Evaluate clean frame-by-frame
+    python evaluate_timestamps.py
 
-Evaluate adversarial frame-by-frame
-python evaluate_adv_timestamps.py
+4. Evaluate adversarial frame-by-frame
+    python evaluate_adv_timestamps.py
 
 Trained model weights: outputs/model_clean.pth, outputs/model_adversarial.pth
 
