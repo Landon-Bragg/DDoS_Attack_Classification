@@ -1,25 +1,8 @@
-```
-DDoS_Attack_Classification/
-├── README.md
-├── requirements.txt
-├── config.py
-├── preprocess_hiveplots.py
-├── data/
-│   └── hive_plot_dataset.py
-├── models/
-│   ├── cnn.py
-│   └── transformer.py
-├── attacks/
-│   └── adversarial_attacks.py
-├── utils.py
-├── adversarial_train.py
-└── evaluate.py
-```
 DDoS Attack Classification with 3D CNN and Adversarial Robustness
 
-This project builds and evaluates a 3D Convolutional Neural Network (CNN) model to classify DDoS vs Normal network traffic based on preprocessed video-like sequences represented as 4D tensors. The model is trained and evaluated under clean, augmented, and adversarial (FGSM and PGD) attack conditions to test its robustness.
+This project builds and evaluates a 3D Convolutional Neural Network (CNN) model to classify DDoS vs Normal network traffic based on preprocessed video-like sequences represented as 4D tensors. The model is trained and evaluated under clean, augmented, and adversarial (FGSM and PGD) attack conditions to test its robustness. 
 
-<img width="355" height="109" alt="Screenshot 2025-07-23 at 3 20 43 PM" src="https://github.com/user-attachments/assets/991b9d4f-8f68-4a53-9409-65fe70df6542" />
+<img width="500" height="150" alt="Screenshot 2025-07-23 at 3 20 43 PM" src="https://github.com/user-attachments/assets/991b9d4f-8f68-4a53-9409-65fe70df6542" />
 
 
 Project Structure
